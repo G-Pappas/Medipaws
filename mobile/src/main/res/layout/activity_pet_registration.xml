@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:gravity="center_horizontal">
+
+        <ImageView
+            android:id="@+id/imagePet"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:src="@drawable/ic_dog_default"
+            android:contentDescription="Pet photo"
+            android:layout_marginBottom="24dp"/>
+
+        <EditText
+            android:id="@+id/inputPetName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Name"
+            android:inputType="textPersonName"
+            android:layout_marginBottom="16dp"/>
+
+        <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+            <RadioButton
+                android:id="@+id/radioDog"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dog"
+                android:checked="true"/>
+            <RadioButton
+                android:id="@+id/radioCat"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cat"/>
+        </RadioGroup>
+
+        <EditText
+            android:id="@+id/inputPetBreed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Breed (optional)"
+            android:inputType="text"
+            android:layout_marginBottom="16dp"/>
+
+        <EditText
+            android:id="@+id/inputPetAge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Age (optional)"
+            android:inputType="number"
+            android:layout_marginBottom="24dp"/>
+
+        <Button
+            android:id="@+id/buttonSavePet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Pet"/>
+
+    </LinearLayout>
+</ScrollView> 

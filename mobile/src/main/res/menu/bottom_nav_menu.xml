@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_medicine"
+        android:title="Medicine"
+        android:icon="@android:drawable/ic_menu_info_details"/>
+    <item
+        android:id="@+id/nav_treatment"
+        android:title="Treatment"
+        android:icon="@android:drawable/ic_menu_edit"/>
+</menu> 

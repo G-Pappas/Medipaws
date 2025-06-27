@@ -1,0 +1,2 @@
+com.example.medipaws.shared
+xml automotive_app_desc

@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">MediPaws</string>
+    <string-array name="dose_units">
+        <item>tablet</item>
+        <item>ml</item>
+        <item>mg</item>
+        <item>drops</item>
+        <item>g</item>
+        <item>capsule</item>
+    </string-array>
+</resources>
