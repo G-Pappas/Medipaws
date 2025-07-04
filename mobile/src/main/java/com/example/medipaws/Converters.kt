@@ -9,4 +9,10 @@ class Converters {
 
     @TypeConverter
     fun dateToTimestamp(date: Date?): Long? = date?.time
+
+    @TypeConverter
+    fun fromEntryStatus(value: EntryStatus?): String? = value?.name
+
+    @TypeConverter
+    fun toEntryStatus(value: String?): EntryStatus? = value?.let { EntryStatus.valueOf(it) }
 } 

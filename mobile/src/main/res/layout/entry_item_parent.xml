@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    app:cardElevation="2dp"
+    app:cardCornerRadius="8dp"
+    android:foreground="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:id="@+id/groupHeaderLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+        <CheckBox
+            android:id="@+id/parentCheckbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_marginEnd="8dp"/>
+        <TextView
+            android:id="@+id/expandCollapseIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:text="▼"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:layout_marginEnd="8dp"/>
+        <TextView
+            android:id="@+id/seriesInfoText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Series Info"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:lineSpacingExtra="4sp"/>
+        <ImageView
+            android:id="@+id/checkmarkView"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_check_circle_24"
+            android:contentDescription="Mark as taken"
+            android:padding="4dp"
+            android:layout_gravity="end"/>
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView> 

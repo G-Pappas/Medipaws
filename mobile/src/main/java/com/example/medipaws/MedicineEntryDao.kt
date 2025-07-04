@@ -16,4 +16,7 @@ interface MedicineEntryDao {
 
     @Update
     suspend fun update(entry: MedicineEntry)
+
+    @Query("SELECT * FROM medicine_entries WHERE id = :id LIMIT 1")
+    suspend fun getEntryById(id: Long): MedicineEntry?
 } 

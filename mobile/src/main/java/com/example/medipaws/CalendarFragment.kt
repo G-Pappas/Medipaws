@@ -23,6 +23,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.*
 import java.time.ZoneId
+import com.example.medipaws.EntryStatus
 
 class CalendarFragment : Fragment() {
 
@@ -158,7 +159,7 @@ class CalendarFragment : Fragment() {
                 (activity as? MainActivity)?.showEntryDialog(entry)
             },
             onToggleTaken = { entry ->
-                viewModel.update(entry.copy(taken = !entry.taken))
+                viewModel.update(entry)
             }
         )
         entriesRecyclerView.layoutManager = LinearLayoutManager(requireContext())

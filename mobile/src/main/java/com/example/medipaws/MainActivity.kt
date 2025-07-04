@@ -33,6 +33,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
+import java.util.UUID
+import com.example.medipaws.EntryStatus
 
 class MainActivity : AppCompatActivity() {
     private lateinit var adapter: MedicineEntryAdapter
@@ -173,7 +175,7 @@ class MainActivity : AppCompatActivity() {
             if (repeatValue > 1) {
                 repeatValue--
                 textRepeatValue.text = repeatValue.toString()
-            }
+        }
         }
         buttonIncrementRepeat.setOnClickListener {
             repeatValue++
@@ -347,6 +349,7 @@ class MainActivity : AppCompatActivity() {
                                 cal.time = dateFormat.parse(startDateStr) ?: java.util.Date()
                                 val alertCal = Calendar.getInstance()
                                 alertCal.time = timeFormat.parse(alertTimeStr) ?: java.util.Date()
+                                val newSeriesId = UUID.randomUUID().toString()
                                 while (!cal.time.after(repeatUntilDate)) {
                                     val notifCal = cal.clone() as Calendar
                                     notifCal.set(Calendar.HOUR_OF_DAY, alertCal.get(Calendar.HOUR_OF_DAY))
@@ -368,29 +371,33 @@ class MainActivity : AppCompatActivity() {
                                         dateTime = dt,
                                         notes = notes,
                                         type = type,
+                                        status = EntryStatus.PENDING,
                                         notificationEnabled = true,
                                         intervalValue = repeatValueFinal,
                                         intervalUnit = repeatUnit,
-                                        repeatUntil = repeatUntilDate
+                                        repeatUntil = repeatUntilDate,
+                                        seriesId = newSeriesId
                                     )
                                     viewModel.insert(newEntry)
                                     scheduleNotification(newEntry)
                                 }
                             } else {
-                                for (dt in dateTimeList) {
-                                    val newEntry = MedicineEntry(
-                                        name = name,
-                                        dose = dose,
-                                        dateTime = dt,
-                                        notes = notes,
+                            for (dt in dateTimeList) {
+                                val newEntry = MedicineEntry(
+                                    name = name,
+                                    dose = dose,
+                                    dateTime = dt,
+                                    notes = notes,
                                         type = type,
+                                        status = EntryStatus.PENDING,
                                         notificationEnabled = true,
                                         intervalValue = repeatValueFinal,
                                         intervalUnit = repeatUnit,
-                                        repeatUntil = repeatUntilDate
-                                    )
-                                    viewModel.insert(newEntry)
-                                    scheduleNotification(newEntry)
+                                        repeatUntil = repeatUntilDate,
+                                        seriesId = null
+                                )
+                                viewModel.insert(newEntry)
+                                scheduleNotification(newEntry)
                                 }
                             }
                         } else {
@@ -400,10 +407,12 @@ class MainActivity : AppCompatActivity() {
                                 dateTime = java.util.Date(),
                                 notes = notes,
                                 type = type,
+                                status = EntryStatus.PENDING,
                                 notificationEnabled = false,
                                 intervalValue = repeatValueFinal,
                                 intervalUnit = repeatUnit,
-                                repeatUntil = repeatUntilDate
+                                repeatUntil = repeatUntilDate,
+                                seriesId = null
                             )
                             viewModel.insert(newEntry)
                         }
@@ -418,7 +427,8 @@ class MainActivity : AppCompatActivity() {
                             notificationEnabled = notify,
                             intervalValue = repeatValueFinal,
                             intervalUnit = repeatUnit,
-                            repeatUntil = repeatUntilDate
+                            repeatUntil = repeatUntilDate,
+                            status = EntryStatus.PENDING // Preserve status
                         )
                         viewModel.update(updatedEntry)
                         if (notify && dateTimeList.isNotEmpty()) {
@@ -447,7 +457,7 @@ class MainActivity : AppCompatActivity() {
                 return
             }
         }
-        val intent = Intent(context, NotificationReceiver::class.java).apply {
+        val baseIntent = Intent(context, NotificationReceiver::class.java).apply {
             putExtra("name", entry.name)
             putExtra("dose", entry.dose)
             putExtra("notes", entry.notes ?: "")
@@ -456,7 +466,7 @@ class MainActivity : AppCompatActivity() {
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             entry.id.toInt(),
-            intent,
+            baseIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         alarmManager.setExactAndAllowWhileIdle(

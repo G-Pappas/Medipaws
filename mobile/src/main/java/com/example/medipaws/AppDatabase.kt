@@ -31,7 +31,7 @@ interface PetDao {
     suspend fun delete(pet: Pet)
 }
 
-@Database(entities = [MedicineEntry::class, Pet::class], version = 6, exportSchema = false)
+@Database(entities = [MedicineEntry::class, Pet::class], version = 8, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun medicineEntryDao(): MedicineEntryDao
@@ -47,7 +47,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "medipaws_db"
                 )
-                .addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                .addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                 .build().also { INSTANCE = it }
             }
         }
@@ -68,6 +68,18 @@ abstract class AppDatabase : RoomDatabase() {
         val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE medicine_entries ADD COLUMN repeatUntil INTEGER")
+            }
+        }
+
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE medicine_entries ADD COLUMN seriesId TEXT")
+            }
+        }
+
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE medicine_entries ADD COLUMN status TEXT NOT NULL DEFAULT 'PENDING'")
             }
         }
     }
