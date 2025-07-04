@@ -69,8 +69,30 @@
                 android:id="@+id/switchNotification"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"/>
+                android:layout_marginStart="16dp"
+                android:thumbTint="@color/switch_purple_thumb"
+                android:trackTint="@color/switch_purple_track"/>
         </LinearLayout>
+
+        <EditText
+            android:id="@+id/inputStartDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Start Date (YYYY-MM-DD)"
+            android:focusable="false"
+            android:clickable="true"
+            android:inputType="none"
+            android:visibility="gone"/>
+
+        <EditText
+            android:id="@+id/inputAlertTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Alert Time (HH:MM)"
+            android:focusable="false"
+            android:clickable="true"
+            android:inputType="none"
+            android:visibility="gone"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -105,21 +127,71 @@
                 android:text="+"/>
         </LinearLayout>
 
-        <EditText
-            android:id="@+id/inputStartDate"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Start Date (YYYY-MM-DD)"
-            android:focusable="false"
-            android:clickable="true"
-            android:inputType="none"
-            android:visibility="gone"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:visibility="gone"
+            android:id="@+id/layoutRepeatSwitch">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Repeat"/>
+            <Switch
+                android:id="@+id/switchRepeat"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:thumbTint="@color/switch_purple_thumb"
+                android:trackTint="@color/switch_purple_track"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layoutRepeat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:visibility="gone">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Repeat every"/>
+            <Button
+                android:id="@+id/buttonDecrementRepeat"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:textSize="14sp"
+                android:padding="0dp"
+                android:text="-"
+                android:layout_marginStart="8dp"/>
+            <TextView
+                android:id="@+id/textRepeatValue"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="1"/>
+            <Button
+                android:id="@+id/buttonIncrementRepeat"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:textSize="14sp"
+                android:padding="0dp"
+                android:text="+"/>
+            <Spinner
+                android:id="@+id/spinnerRepeatUnit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:entries="@array/interval_units"/>
+        </LinearLayout>
 
         <EditText
-            android:id="@+id/inputAlertTime"
+            android:id="@+id/inputRepeatUntil"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Alert Time (HH:MM)"
+            android:hint="Repeat until (dd-MM-yyyy)"
             android:focusable="false"
             android:clickable="true"
             android:inputType="none"
@@ -129,7 +201,7 @@
             android:id="@+id/inputNotes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Notes (optional)"
+            android:hint="Notes"
             android:inputType="textMultiLine"
             android:minLines="2"/>
 

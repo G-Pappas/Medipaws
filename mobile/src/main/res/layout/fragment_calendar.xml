@@ -37,9 +37,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Next Month"
             android:padding="8dp"
-            android:src="@drawable/ic_chevron_right_24"
-            android:contentDescription="Next Month" />
+            android:src="@drawable/ic_chevron_right_24" />
     </LinearLayout>
 
     <com.kizitonwose.calendar.view.CalendarView

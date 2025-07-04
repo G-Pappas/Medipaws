@@ -21,5 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "MediPaws"
 include(":mobile")
-include(":automotive")
 include(":shared")

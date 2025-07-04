@@ -10,7 +10,8 @@ import java.util.*
 
 class MedicineEntryAdapter(
     private var entries: List<MedicineEntry>,
-    private val onLongPress: (MedicineEntry) -> Unit
+    private val onLongPress: (MedicineEntry) -> Unit,
+    private val onToggleTaken: (MedicineEntry) -> Unit
 ) : RecyclerView.Adapter<MedicineEntryAdapter.EntryViewHolder>() {
     private var expandedEntryId: Long? = null
 
@@ -19,6 +20,7 @@ class MedicineEntryAdapter(
         val doseText: TextView = itemView.findViewById(R.id.doseText)
         val dateTimeText: TextView = itemView.findViewById(R.id.dateTimeText)
         val notesText: TextView = itemView.findViewById(R.id.notesText)
+        val checkmarkView: android.widget.ImageView = itemView.findViewById(R.id.checkmarkView)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EntryViewHolder {
@@ -39,6 +41,23 @@ class MedicineEntryAdapter(
             holder.notesText.visibility = View.VISIBLE
         } else {
             holder.notesText.visibility = View.GONE
+        }
+
+        // Visuals for taken entries
+        if (entry.taken) {
+            holder.nameText.alpha = 0.5f
+            holder.doseText.alpha = 0.5f
+            holder.dateTimeText.alpha = 0.5f
+            holder.checkmarkView.setColorFilter(0xFF4CAF50.toInt()) // Green
+        } else {
+            holder.nameText.alpha = 1f
+            holder.doseText.alpha = 1f
+            holder.dateTimeText.alpha = 1f
+            holder.checkmarkView.setColorFilter(0xFF888888.toInt()) // Gray
+        }
+
+        holder.checkmarkView.setOnClickListener {
+            onToggleTaken(entry)
         }
 
         holder.itemView.setOnClickListener {

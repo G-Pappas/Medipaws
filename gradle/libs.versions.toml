@@ -25,4 +25,5 @@ androidx-media = { group = "androidx.media", name = "media", version.ref = "medi
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+navigation-safe-args = { id = "androidx.navigation.safeargs.kotlin", version = "2.7.7" }
 

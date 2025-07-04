@@ -47,6 +47,15 @@
             android:textColor="#666666"
             android:visibility="gone"/>
 
+        <ImageView
+            android:id="@+id/checkmarkView"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="end"
+            android:src="@drawable/ic_check_circle_24"
+            android:contentDescription="Mark as taken"
+            android:padding="4dp"/>
+
     </LinearLayout>
 
 </androidx.cardview.widget.CardView> 

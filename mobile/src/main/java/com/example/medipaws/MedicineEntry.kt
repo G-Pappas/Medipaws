@@ -12,5 +12,10 @@ data class MedicineEntry(
     val dateTime: Date,
     val notes: String? = null,
     val type: String = "Medicine",
-    val petId: Long? = null
+    val petId: Long? = null,
+    val taken: Boolean = false,
+    val notificationEnabled: Boolean = false,
+    val intervalValue: Int = 0,
+    val intervalUnit: String = "hours",
+    val repeatUntil: Date? = null
 ) 

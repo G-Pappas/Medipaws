@@ -7,4 +7,16 @@
         android:id="@+id/nav_treatment"
         android:title="Treatment"
         android:icon="@android:drawable/ic_menu_edit"/>
+    <item
+        android:id="@+id/nav_calendar"
+        android:title="Calendar"
+        android:icon="@drawable/ic_calendar"/>
+    <item
+        android:id="@+id/nav_pets"
+        android:title="Pets"
+        android:icon="@drawable/ic_pets"/>
+    <item
+        android:id="@+id/nav_settings"
+        android:title="Settings"
+        android:icon="@android:drawable/ic_menu_preferences"/>
 </menu> 

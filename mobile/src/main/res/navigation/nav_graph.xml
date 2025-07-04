@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/nav_medicine">
+
+    <fragment
+        android:id="@+id/nav_medicine"
+        android:name="com.example.medipaws.EntriesFragment"
+        android:label="fragment_entries"
+        tools:layout="@layout/fragment_entries" >
+        <argument
+            android:name="filterType"
+            app:argType="string"
+            android:defaultValue="Medicine" />
+    </fragment>
+    <fragment
+        android:id="@+id/nav_treatment"
+        android:name="com.example.medipaws.EntriesFragment"
+        android:label="fragment_entries"
+        tools:layout="@layout/fragment_entries" >
+        <argument
+            android:name="filterType"
+            app:argType="string"
+            android:defaultValue="Treatment" />
+    </fragment>
+    <fragment
+        android:id="@+id/nav_calendar"
+        android:name="com.example.medipaws.CalendarFragment"
+        android:label="fragment_calendar"
+        tools:layout="@layout/fragment_calendar" />
+    <fragment
+        android:id="@+id/nav_pets"
+        android:name="com.example.medipaws.PetsManagementFragment"
+        android:label="fragment_pets_management"
+        tools:layout="@layout/fragment_pets_management" />
+    <fragment
+        android:id="@+id/nav_settings"
+        android:name="com.example.medipaws.SettingsFragment"
+        android:label="fragment_settings"
+        tools:layout="@layout/fragment_settings" />
+</navigation> 

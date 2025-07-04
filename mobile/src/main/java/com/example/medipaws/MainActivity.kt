@@ -28,6 +28,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import androidx.activity.result.contract.ActivityResultContracts
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupWithNavController
 
 class MainActivity : AppCompatActivity() {
     private lateinit var adapter: MedicineEntryAdapter
@@ -42,44 +47,46 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // Request notification permission for Android 13+
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            if (ContextCompat.checkSelfPermission(this, "android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf("android.permission.POST_NOTIFICATIONS"), 1001)
+            }
+        }
+
         petRegistrationLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            // After registration, reload or refresh UI as needed
             checkAndShowRegistration()
         }
         checkAndShowRegistration()
 
-        val entriesRecyclerView = findViewById<RecyclerView>(R.id.entriesRecyclerView)
-        val addEntryFab = findViewById<FloatingActionButton>(R.id.addEntryFab)
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navController = navHostFragment.navController
         val bottomNavigationView = findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNavigationView)
+        bottomNavigationView.setupWithNavController(navController)
 
-        adapter = MedicineEntryAdapter(
-            emptyList(),
-            onLongPress = { entry ->
-                // Show edit dialog
-                showEntryDialog(entry)
-            }
-        )
-        entriesRecyclerView.layoutManager = LinearLayoutManager(this)
-        entriesRecyclerView.adapter = adapter
-
-        bottomNavigationView.setOnItemSelectedListener { item ->
-            currentFilter = when (item.itemId) {
-                R.id.nav_medicine -> "Medicine"
-                R.id.nav_treatment -> "Treatment"
-                else -> "Medicine"
-            }
-            filterAndShowEntries(currentFilter)
-            true
-        }
-        // Set default selected tab
-        bottomNavigationView.selectedItemId = R.id.nav_medicine
-
-        viewModel.entries.observe(this, Observer { entries ->
-            filterAndShowEntries(currentFilter, entries)
-        })
-
+        val addEntryFab = findViewById<FloatingActionButton>(R.id.addEntryFab)
         addEntryFab.setOnClickListener {
-            showEntryDialog(null)
+            // Show the add entry dialog for the current fragment if possible
+            val currentFragment = navHostFragment.childFragmentManager.primaryNavigationFragment
+            if (currentFragment is EntriesFragment) {
+                (currentFragment.activity as? MainActivity)?.showEntryDialog(null)
+            } else if (currentFragment is CalendarFragment) {
+                (currentFragment.activity as? MainActivity)?.showEntryDialog(null)
+            }
+        }
+
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.nav_medicine -> {
+                    currentFilter = "Medicine"
+                    addEntryFab.show()
+                }
+                R.id.nav_treatment -> {
+                    currentFilter = "Treatment"
+                    addEntryFab.show()
+                }
+                else -> addEntryFab.hide()
+            }
         }
     }
 
@@ -96,7 +103,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showEntryDialog(entry: MedicineEntry? = null) {
+    fun showEntryDialog(
+        entry: MedicineEntry? = null,
+        preselectedDate: java.util.Date? = null,
+        preselectNotification: Boolean = false
+    ) {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_entry, null)
         val radioTypeGroup = dialogView.findViewById<android.widget.RadioGroup>(R.id.radioTypeGroup)
         val radioMedicine = dialogView.findViewById<android.widget.RadioButton>(R.id.radioMedicine)
@@ -113,6 +124,14 @@ class MainActivity : AppCompatActivity() {
         val inputNotes = dialogView.findViewById<EditText>(R.id.inputNotes)
         val inputName = dialogView.findViewById<EditText>(R.id.inputName)
         val layoutDose = dialogView.findViewById<View>(R.id.layoutDose)
+        val layoutRepeatSwitch = dialogView.findViewById<View>(R.id.layoutRepeatSwitch)
+        val switchRepeat = dialogView.findViewById<android.widget.Switch>(R.id.switchRepeat)
+        val layoutRepeat = dialogView.findViewById<View>(R.id.layoutRepeat)
+        val spinnerRepeatUnit = dialogView.findViewById<android.widget.Spinner>(R.id.spinnerRepeatUnit)
+        val buttonDecrementRepeat = dialogView.findViewById<android.widget.Button>(R.id.buttonDecrementRepeat)
+        val buttonIncrementRepeat = dialogView.findViewById<android.widget.Button>(R.id.buttonIncrementRepeat)
+        val textRepeatValue = dialogView.findViewById<android.widget.TextView>(R.id.textRepeatValue)
+        val inputRepeatUntil = dialogView.findViewById<EditText>(R.id.inputRepeatUntil)
 
         val calendar = Calendar.getInstance()
         val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
@@ -139,29 +158,27 @@ class MainActivity : AppCompatActivity() {
             layoutDuration.visibility = if (notify) View.VISIBLE else View.GONE
             inputStartDate.visibility = if (notify) View.VISIBLE else View.GONE
             inputAlertTime.visibility = if (notify) View.VISIBLE else View.GONE
+            layoutRepeatSwitch.visibility = if (notify) View.VISIBLE else View.GONE
+            layoutRepeat.visibility = if (notify && switchRepeat.isChecked) View.VISIBLE else View.GONE
+            inputRepeatUntil.visibility = if (notify && switchRepeat.isChecked) View.VISIBLE else View.GONE
         }
         radioTypeGroup.setOnCheckedChangeListener { _, _ -> updateVisibility() }
         switchNotification.setOnCheckedChangeListener { _, _ -> updateVisibility() }
+        switchRepeat.setOnCheckedChangeListener { _, _ -> updateVisibility() }
         updateVisibility()
 
-        inputStartDate.setOnClickListener {
-            val now = Calendar.getInstance()
-            DatePickerDialog(this, { _, year, month, dayOfMonth ->
-                calendar.set(Calendar.YEAR, year)
-                calendar.set(Calendar.MONTH, month)
-                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                inputStartDate.setText(dateFormat.format(calendar.time))
-            }, now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH)).show()
+        var repeatValue = 1
+        textRepeatValue.text = repeatValue.toString()
+        buttonDecrementRepeat.setOnClickListener {
+            if (repeatValue > 1) {
+                repeatValue--
+                textRepeatValue.text = repeatValue.toString()
+            }
         }
-        inputAlertTime.setOnClickListener {
-            val now = Calendar.getInstance()
-            TimePickerDialog(this, { _, hourOfDay, minute ->
-                calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
-                calendar.set(Calendar.MINUTE, minute)
-                inputAlertTime.setText(String.format("%02d:%02d", hourOfDay, minute))
-            }, now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true).show()
+        buttonIncrementRepeat.setOnClickListener {
+            repeatValue++
+            textRepeatValue.text = repeatValue.toString()
         }
-
         // If editing, pre-fill fields
         if (entry != null) {
             // For now, assume all entries are Medicine (for backward compatibility)
@@ -185,16 +202,67 @@ class MainActivity : AppCompatActivity() {
             // Pre-fill notification fields if entry has a future date
             inputStartDate.setText(dateFormat.format(entry.dateTime))
             inputAlertTime.setText(timeFormat.format(entry.dateTime))
+            // Pre-fill notification switch based on entry
+            switchNotification.isChecked = entry.notificationEnabled
             // Duration cannot be inferred from a single entry, so leave as default
+            // Pre-fill interval fields
+            switchRepeat.isChecked = entry.intervalValue > 0
+            repeatValue = entry.intervalValue.takeIf { it > 0 } ?: 1
+            textRepeatValue.text = repeatValue.toString()
+            val repeatUnitAdapter = spinnerRepeatUnit.adapter
+            if (repeatUnitAdapter != null) {
+                for (i in 0 until repeatUnitAdapter.count) {
+                    if (repeatUnitAdapter.getItem(i).toString().equals(entry.intervalUnit, ignoreCase = true)) {
+                        spinnerRepeatUnit.setSelection(i)
+                        break
+                    }
+                }
+            }
+            // Pre-fill repeat fields
+            inputRepeatUntil.setText(entry.repeatUntil?.let { dateFormat.format(it) } ?: "")
         } else {
-            // Set default start date to today
-            inputStartDate.setText(dateFormat.format(java.util.Date()))
+            // Set default start date to today or preselectedDate
+            inputStartDate.setText(dateFormat.format(preselectedDate ?: java.util.Date()))
             // Set default type based on current filter
             if (currentFilter == "Treatment") {
                 radioTreatment.isChecked = true
             } else {
                 radioMedicine.isChecked = true
             }
+            // Preselect notification if requested
+            switchNotification.isChecked = preselectNotification
+            spinnerRepeatUnit.setSelection(0)
+            switchRepeat.isChecked = false
+            repeatValue = 1
+            textRepeatValue.text = repeatValue.toString()
+            inputRepeatUntil.setText("")
+        }
+
+        inputStartDate.setOnClickListener {
+            val now = Calendar.getInstance()
+            DatePickerDialog(this, { _, year, month, dayOfMonth ->
+                calendar.set(Calendar.YEAR, year)
+                calendar.set(Calendar.MONTH, month)
+                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                inputStartDate.setText(dateFormat.format(calendar.time))
+            }, now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH)).show()
+        }
+        inputAlertTime.setOnClickListener {
+            val now = Calendar.getInstance()
+            TimePickerDialog(this, { _, hourOfDay, minute ->
+                calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                calendar.set(Calendar.MINUTE, minute)
+                inputAlertTime.setText(String.format("%02d:%02d", hourOfDay, minute))
+            }, now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true).show()
+        }
+        inputRepeatUntil.setOnClickListener {
+            val now = Calendar.getInstance()
+            DatePickerDialog(this, { _, year, month, dayOfMonth ->
+                now.set(Calendar.YEAR, year)
+                now.set(Calendar.MONTH, month)
+                now.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                inputRepeatUntil.setText(dateFormat.format(now.time))
+            }, now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH)).show()
         }
 
         val dialogBuilder = AlertDialog.Builder(this)
@@ -224,6 +292,14 @@ class MainActivity : AppCompatActivity() {
                 val notify = switchNotification.isChecked
                 val startDateStr = inputStartDate.text.toString().trim()
                 val alertTimeStr = inputAlertTime.text.toString().trim()
+                val intervalValue = textRepeatValue.text.toString().toIntOrNull() ?: 0
+                val intervalUnit = spinnerRepeatUnit.selectedItem?.toString() ?: "hours"
+                val repeatEnabled = switchRepeat.isChecked
+                val repeatValueFinal = if (repeatEnabled) textRepeatValue.text.toString().toIntOrNull() ?: 1 else 0
+                val repeatUnit = spinnerRepeatUnit.selectedItem?.toString() ?: "hours"
+                val repeatUntilDate = inputRepeatUntil.text.toString().takeIf { it.isNotBlank() }?.let {
+                    try { dateFormat.parse(it) } catch (e: Exception) { null }
+                }
 
                 // Validation
                 if (name.isEmpty()) {
@@ -264,16 +340,58 @@ class MainActivity : AppCompatActivity() {
                     }
                     if (entry == null) {
                         if (notify && dateTimeList.isNotEmpty()) {
-                            for (dt in dateTimeList) {
-                                val newEntry = MedicineEntry(
-                                    name = name,
-                                    dose = dose,
-                                    dateTime = dt,
-                                    notes = notes,
-                                    type = type
-                                )
-                                viewModel.insert(newEntry)
-                                scheduleNotification(newEntry)
+                            // If repeat is enabled and repeatUntil is set, generate all repeat dates
+                            if (repeatEnabled && repeatUntilDate != null && repeatValueFinal > 0) {
+                                val repeatDates = mutableListOf<java.util.Date>()
+                                val cal = Calendar.getInstance()
+                                cal.time = dateFormat.parse(startDateStr) ?: java.util.Date()
+                                val alertCal = Calendar.getInstance()
+                                alertCal.time = timeFormat.parse(alertTimeStr) ?: java.util.Date()
+                                while (!cal.time.after(repeatUntilDate)) {
+                                    val notifCal = cal.clone() as Calendar
+                                    notifCal.set(Calendar.HOUR_OF_DAY, alertCal.get(Calendar.HOUR_OF_DAY))
+                                    notifCal.set(Calendar.MINUTE, alertCal.get(Calendar.MINUTE))
+                                    notifCal.set(Calendar.SECOND, 0)
+                                    notifCal.set(Calendar.MILLISECOND, 0)
+                                    repeatDates.add(notifCal.time)
+                                    when (repeatUnit) {
+                                        "days" -> cal.add(Calendar.DAY_OF_YEAR, repeatValueFinal)
+                                        "hours" -> cal.add(Calendar.HOUR_OF_DAY, repeatValueFinal)
+                                        "years" -> cal.add(Calendar.YEAR, repeatValueFinal)
+                                        else -> cal.add(Calendar.DAY_OF_YEAR, repeatValueFinal)
+                                    }
+                                }
+                                for (dt in repeatDates) {
+                                    val newEntry = MedicineEntry(
+                                        name = name,
+                                        dose = dose,
+                                        dateTime = dt,
+                                        notes = notes,
+                                        type = type,
+                                        notificationEnabled = true,
+                                        intervalValue = repeatValueFinal,
+                                        intervalUnit = repeatUnit,
+                                        repeatUntil = repeatUntilDate
+                                    )
+                                    viewModel.insert(newEntry)
+                                    scheduleNotification(newEntry)
+                                }
+                            } else {
+                                for (dt in dateTimeList) {
+                                    val newEntry = MedicineEntry(
+                                        name = name,
+                                        dose = dose,
+                                        dateTime = dt,
+                                        notes = notes,
+                                        type = type,
+                                        notificationEnabled = true,
+                                        intervalValue = repeatValueFinal,
+                                        intervalUnit = repeatUnit,
+                                        repeatUntil = repeatUntilDate
+                                    )
+                                    viewModel.insert(newEntry)
+                                    scheduleNotification(newEntry)
+                                }
                             }
                         } else {
                             val newEntry = MedicineEntry(
@@ -281,7 +399,11 @@ class MainActivity : AppCompatActivity() {
                                 dose = dose,
                                 dateTime = java.util.Date(),
                                 notes = notes,
-                                type = type
+                                type = type,
+                                notificationEnabled = false,
+                                intervalValue = repeatValueFinal,
+                                intervalUnit = repeatUnit,
+                                repeatUntil = repeatUntilDate
                             )
                             viewModel.insert(newEntry)
                         }
@@ -292,7 +414,11 @@ class MainActivity : AppCompatActivity() {
                             name = name,
                             dose = dose,
                             notes = notes,
-                            type = type
+                            type = type,
+                            notificationEnabled = notify,
+                            intervalValue = repeatValueFinal,
+                            intervalUnit = repeatUnit,
+                            repeatUntil = repeatUntilDate
                         )
                         viewModel.update(updatedEntry)
                         if (notify && dateTimeList.isNotEmpty()) {

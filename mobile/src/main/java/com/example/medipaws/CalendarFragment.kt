@@ -152,9 +152,15 @@ class CalendarFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        adapter = MedicineEntryAdapter(emptyList()) { entry ->
-            (activity as? MainActivity)?.showEntryDialog(entry)
-        }
+        adapter = MedicineEntryAdapter(
+            emptyList(),
+            onLongPress = { entry ->
+                (activity as? MainActivity)?.showEntryDialog(entry)
+            },
+            onToggleTaken = { entry ->
+                viewModel.update(entry.copy(taken = !entry.taken))
+            }
+        )
         entriesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         entriesRecyclerView.adapter = adapter
     }
@@ -168,6 +174,19 @@ class CalendarFragment : Fragment() {
             view.setOnClickListener {
                 if (day.position == DayPosition.MonthDate) {
                     selectDate(day.date)
+                }
+            }
+            view.setOnLongClickListener {
+                if (day.position == DayPosition.MonthDate) {
+                    val date = java.util.Date.from(day.date.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant())
+                    (activity as? MainActivity)?.showEntryDialog(
+                        entry = null,
+                        preselectedDate = date,
+                        preselectNotification = true
+                    )
+                    true
+                } else {
+                    false
                 }
             }
         }
