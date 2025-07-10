@@ -378,8 +378,9 @@ class MainActivity : AppCompatActivity() {
                                         repeatUntil = repeatUntilDate,
                                         seriesId = newSeriesId
                                     )
-                                    viewModel.insert(newEntry)
-                                    scheduleNotification(newEntry)
+                                    viewModel.insert(newEntry) { newId ->
+                                        scheduleNotification(newEntry.copy(id = newId))
+                                    }
                                 }
                             } else {
                             for (dt in dateTimeList) {
@@ -396,8 +397,9 @@ class MainActivity : AppCompatActivity() {
                                         repeatUntil = repeatUntilDate,
                                         seriesId = null
                                 )
-                                viewModel.insert(newEntry)
-                                scheduleNotification(newEntry)
+                                viewModel.insert(newEntry) { newId ->
+                                    scheduleNotification(newEntry.copy(id = newId))
+                                }
                                 }
                             }
                         } else {

@@ -15,26 +15,36 @@ import com.example.medipaws.EntryStatus
 import android.app.PendingIntent
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
+import android.util.Log
+import android.widget.Toast
 
 class NotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        // Log.d("NotificationReceiver", "onReceive called with intent: " + intent.extras)
+        // Toast.makeText(context, "NotificationReceiver triggered", Toast.LENGTH_SHORT).show()
         val name = intent.getStringExtra("name") ?: "Medicine Reminder"
         val dose = intent.getStringExtra("dose") ?: ""
         val notes = intent.getStringExtra("notes") ?: ""
         val id = intent.getLongExtra("id", 0L).toInt()
         val action = intent.getStringExtra("action")
 
-        val db = Room.databaseBuilder(context, AppDatabase::class.java, "medipaws_db").build()
+        // Use the Room singleton to ensure changes are observed by the UI
+        val db = AppDatabase.getDatabase(context.applicationContext)
         val dao = db.medicineEntryDao()
 
         if (action == "DONE" || action == "LOST") {
             GlobalScope.launch {
                 val entry = dao.getEntryById(id.toLong())
+                // Log.d("NotificationReceiver", "Fetched entry: $entry")
                 if (entry != null) {
                     val newStatus = if (action == "DONE") EntryStatus.DONE else EntryStatus.LOST
                     dao.update(entry.copy(status = newStatus))
+                    // Log.d("NotificationReceiver", "Entry updated: id=${entry.id}, newStatus=$newStatus")
                 }
+                // Log.d("NotificationReceiver", "Coroutine completed for id=$id")
             }
+            // Cancel the notification
+            NotificationManagerCompat.from(context).cancel(id)
             return
         } else if (action == "SNOOZE") {
             // Get snooze duration from settings
@@ -59,6 +69,8 @@ class NotificationReceiver : BroadcastReceiver() {
                 snoozeTime,
                 pendingIntent
             )
+            // Cancel the notification
+            NotificationManagerCompat.from(context).cancel(id)
             return
         }
 

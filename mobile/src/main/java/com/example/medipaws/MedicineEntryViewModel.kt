@@ -12,6 +12,11 @@ class MedicineEntryViewModel(application: Application) : AndroidViewModel(applic
     private val dao = AppDatabase.getDatabase(application).medicineEntryDao()
     val entries = dao.getAllEntries().asLiveData()
 
+    fun insert(entry: MedicineEntry, onInserted: (Long) -> Unit) = viewModelScope.launch {
+        val newId = dao.insert(entry)
+        onInserted(newId)
+    }
+
     fun insert(entry: MedicineEntry) = viewModelScope.launch {
         dao.insert(entry)
     }

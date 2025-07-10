@@ -9,7 +9,7 @@ interface MedicineEntryDao {
     fun getAllEntries(): Flow<List<MedicineEntry>>
 
     @Insert
-    suspend fun insert(entry: MedicineEntry)
+    suspend fun insert(entry: MedicineEntry): Long
 
     @Delete
     suspend fun delete(entry: MedicineEntry)

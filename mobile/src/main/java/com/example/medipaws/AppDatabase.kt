@@ -41,15 +41,24 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile private var INSTANCE: AppDatabase? = null
 
         fun getDatabase(context: Context): AppDatabase {
+            // Always use applicationContext to avoid leaking Activity/Service
             return INSTANCE ?: synchronized(this) {
-                Room.databaseBuilder(
+                val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "medipaws_db"
                 )
                 .addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
-                .build().also { INSTANCE = it }
+                .setJournalMode(JournalMode.WRITE_AHEAD_LOGGING)
+                .build()
+                INSTANCE = instance
+                instance
             }
+        }
+
+        // For testing or app shutdown
+        fun destroyInstance() {
+            INSTANCE = null
         }
 
         val MIGRATION_3_4 = object : Migration(3, 4) {
