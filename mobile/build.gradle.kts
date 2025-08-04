@@ -70,5 +70,8 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
 
+    // PDF Generation
+    implementation("com.itextpdf:itextg:5.5.10")
+
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }

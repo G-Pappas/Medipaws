@@ -38,4 +38,13 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"/>
 
+    <Button
+        android:id="@+id/exportButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="Export PDF Report"
+        android:background="@color/purple_500"
+        android:textColor="@android:color/white"/>
+
 </LinearLayout> 
